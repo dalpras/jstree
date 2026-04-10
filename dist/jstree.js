@@ -871,7 +871,6 @@ var jsTree = (function () {
         }
 
         // selection (just visual indication - redraw involved nodes or loop and apply minor changes)
-        // selection (just visual indication - redraw involved nodes or loop and apply minor changes)
         select(node, options = {}) {
             const silent = !!options.silent;
 
@@ -884,6 +883,8 @@ var jsTree = (function () {
                 this.setState(node, "selected", true);
                 if (!silent) {
                     this.trigger("select", { node: node });
+                } else {
+                    this.redraw();
                 }
             }
             return this;
@@ -901,6 +902,8 @@ var jsTree = (function () {
                 this.setState(node, "selected", false);
                 if (!silent) {
                     this.trigger("deselect", { node: node });
+                } else {
+                    this.redraw();
                 }
             }
             return this;
@@ -914,6 +917,8 @@ var jsTree = (function () {
             }
             if (!silent) {
                 this.trigger("selectAll");
+            } else {
+                this.redraw();
             }
             return this;
         }
@@ -926,9 +931,12 @@ var jsTree = (function () {
             }
             if (!silent) {
                 this.trigger("deselectAll");
+            } else {
+                this.redraw();
             }
             return this;
         }
+
         getSelected() {
             return this.tree.find(function (node) {
                 return node.data && node.data.state && node.data.state.selected;
