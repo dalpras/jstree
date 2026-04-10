@@ -1,0 +1,47 @@
+{
+  "name": "jstree",
+  "title": "jsTree",
+  "description": "javascript tree manipulation and visualization library",
+  "version": "4.0.0",
+  "main": "./dist/jstree.js",
+  "scripts": {
+    "build": "rollup -c",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": {
+    "name": "Ivan Bozhanov"
+  },
+  "contributors": [
+    {
+      "name": "Stefano Dal Prà",
+      "url": "https://github.com/dalpras"
+    }
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/dalpras/jstree.git"
+  },
+  "license": "MIT",
+  "npmName": "jstree",
+  "npmFileMap": [
+    {
+      "basePath": "/dist/",
+      "files": [
+        "jstree.js",
+        "themes/**/*.png",
+        "themes/**/*.gif",
+        "themes/**/*.css"
+      ]
+    }
+  ],
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@rollup/plugin-alias": "^5.1.1",
+    "@rollup/plugin-node-resolve": "^16.0.3",
+    "@rollup/plugin-terser": "^1.0.0",
+    "eslint": "^10.2.0",
+    "fast-glob": "^3.3.3",
+    "rollup": "^4.60.1",
+    "rollup-plugin-postcss": "^4.0.2"
+  }
+}
