@@ -878,15 +878,18 @@ var jsTree = (function () {
                 node.forEach(x => this.select(x, options));
                 return this;
             }
+
             node = this.node(node);
             if (node) {
                 this.setState(node, "selected", true);
-                if (!silent) {
-                    this.trigger("select", { node: node });
-                } else {
+
+                if (silent) {
                     this.redraw();
+                } else {
+                    this.trigger("select", { node: node });
                 }
             }
+
             return this;
         }
 
@@ -897,15 +900,18 @@ var jsTree = (function () {
                 node.forEach(x => this.deselect(x, options));
                 return this;
             }
+
             node = this.node(node);
             if (node) {
                 this.setState(node, "selected", false);
-                if (!silent) {
-                    this.trigger("deselect", { node: node });
-                } else {
+
+                if (silent) {
                     this.redraw();
+                } else {
+                    this.trigger("deselect", { node: node });
                 }
             }
+
             return this;
         }
 
