@@ -3,9 +3,8 @@ import Tree from "model/Tree";
 import InfiniteScroller from "render/InfiniteScroller";
 import Flat from "render/Flat";
 
-class jsTree
-{
-    static _extend (out) {
+class jsTree {
+    static _extend(out) {
         out = out || {};
         for (let i = 1; i < arguments.length; i++) {
             let obj = arguments[i];
@@ -29,8 +28,8 @@ class jsTree
         this.tree = new Tree();
         this.events = {};
         this.handlers = {
-            create : [],
-            render : []
+            create: [],
+            render: []
         };
 
         // TODO: aria
@@ -68,7 +67,7 @@ class jsTree
                         .empty()
                         .create(data, null);
                 },
-                function () {}
+                function () { }
             );
         } else {
             this
@@ -97,24 +96,24 @@ class jsTree
             return this._nodeList[parseInt(node.getAttribute('data-index'), 10)] || null;
         }
         if (typeof node !== "object" && typeof node !== "function") {
-            node = { [this.options.idProperty] : node };
+            node = { [this.options.idProperty]: node };
         }
         return this.tree.findFirst(node);
     }
     find(criteria) {
         if (typeof criteria !== "object" && typeof criteria !== "function") {
-            criteria = { [this.options.idProperty] : criteria };
+            criteria = { [this.options.idProperty]: criteria };
         }
         return this.tree.find(criteria);
     }
     * filter(criteria) {
         if (typeof criteria !== "object" && typeof criteria !== "function") {
-            criteria = { [this.options.idProperty] : criteria };
+            criteria = { [this.options.idProperty]: criteria };
         }
-        yield * this.tree.filter(criteria);
+        yield* this.tree.filter(criteria);
     }
-    * [Symbol.iterator]() {
-        yield * this.tree[Symbol.iterator]();
+    *[Symbol.iterator]() {
+        yield* this.tree[Symbol.iterator]();
     }
 
     getState(node, key, defaultValue = null) {
@@ -222,7 +221,7 @@ class jsTree
         }
         if (node) {
             this.setState(node, "opened", true);
-            this.trigger('open', { node : node });
+            this.trigger('open', { node: node });
         }
         return this;
     }
@@ -234,7 +233,7 @@ class jsTree
         node = this.node(node);
         if (node) {
             this.setState(node, "opened", false);
-            this.trigger('close', { node : node });
+            this.trigger('close', { node: node });
         }
         return this;
     }
@@ -262,7 +261,7 @@ class jsTree
         node = this.node(node);
         if (node) {
             this.setState(node, "hidden", true);
-            this.trigger('hide', { node : node });
+            this.trigger('hide', { node: node });
         }
         return this;
     }
@@ -274,7 +273,7 @@ class jsTree
         node = this.node(node);
         if (node) {
             this.setState(node, "hidden", false);
-            this.trigger('show', { node : node });
+            this.trigger('show', { node: node });
         }
         return this;
     }
@@ -294,42 +293,62 @@ class jsTree
     }
 
     // selection (just visual indication - redraw involved nodes or loop and apply minor changes)
-    select(node) {
+    // selection (just visual indication - redraw involved nodes or loop and apply minor changes)
+    select(node, options = {}) {
+        const silent = !!options.silent;
+
         if (Array.isArray(node)) {
-            node.forEach(x => this.select(x));
+            node.forEach(x => this.select(x, options));
             return this;
         }
         node = this.node(node);
         if (node) {
             this.setState(node, "selected", true);
-            this.trigger("select", { node : node });
+            if (!silent) {
+                this.trigger("select", { node: node });
+            }
         }
         return this;
     }
-    deselect(node) {
+
+    deselect(node, options = {}) {
+        const silent = !!options.silent;
+
         if (Array.isArray(node)) {
-            node.forEach(x => this.deselect(x));
+            node.forEach(x => this.deselect(x, options));
             return this;
         }
         node = this.node(node);
         if (node) {
             this.setState(node, "selected", false);
-            this.trigger("deselect", { node : node });
+            if (!silent) {
+                this.trigger("deselect", { node: node });
+            }
         }
         return this;
     }
-    selectAll() {
+
+    selectAll(options = {}) {
+        const silent = !!options.silent;
+
         for (let node of this.tree) {
             this.setState(node, "selected", true);
         }
-        this.trigger("selectAll");
+        if (!silent) {
+            this.trigger("selectAll");
+        }
         return this;
     }
-    deselectAll() {
+
+    deselectAll(options = {}) {
+        const silent = !!options.silent;
+
         for (let node of this.tree) {
             this.setState(node, "selected", false);
         }
-        this.trigger("deselectAll");
+        if (!silent) {
+            this.trigger("deselectAll");
+        }
         return this;
     }
     getSelected() {
@@ -347,7 +366,7 @@ class jsTree
         node = this.node(node);
         if (node) {
             this.setState(node, "disabled", false);
-            this.trigger("enable", { node : node });
+            this.trigger("enable", { node: node });
         }
         return this;
     }
@@ -359,7 +378,7 @@ class jsTree
         node = this.node(node);
         if (node) {
             this.setState(node, "disabled", true);
-            this.trigger("disable", { node : node });
+            this.trigger("disable", { node: node });
         }
         return this;
     }
@@ -432,7 +451,7 @@ class jsTree
             parent.addChild(node, index);
         }
         node._dirty = true;
-        this.trigger('create', { node : node, parent : parent, index : index });
+        this.trigger('create', { node: node, parent: parent, index: index });
         return this;
     }
     move(node, parent, index = null) {
@@ -448,22 +467,22 @@ class jsTree
         }
         node = this.node(node);
         node.remove();
-        this.trigger('delete', { node : node });
+        this.trigger('delete', { node: node });
         return this;
     }
 
     * visible() {
-        let recurse = function * (node) {
+        let recurse = function* (node) {
             for (let child of node.children) {
                 if (!child.data.state || !child.data.state.hidden) {
                     yield child;
                     if (child.data.state && child.data.state.opened) {
-                        yield * recurse(child);
+                        yield* recurse(child);
                     }
                 }
             }
         };
-        yield * recurse(this.tree.root);
+        yield* recurse(this.tree.root);
     }
     redraw(updateNodeList = false) {
         if (this.redrawID) {
@@ -511,13 +530,13 @@ class jsTree
                 this._renderer = new InfiniteScroller(
                     target,
                     {
-                        create : (function () {
+                        create: (function () {
                             let node = document.createElement("div");
                             node.classList.add("jstree-node");
                             this.handlers.create.forEach(v => v.call(this, node));
                             return node;
                         }).bind(this),
-                        update : (function (index, dom, onlyDirty = true) {
+                        update: (function (index, dom, onlyDirty = true) {
                             let node = this._nodeList[index];
                             if (!node) {
                                 dom.style.display = 'none';
@@ -550,7 +569,7 @@ class jsTree
                             }
                             clss = this.getState(node, "selected", false) ? 'jstree-selected' : '';
                             html += `<a class="jstree-node-text ${clss}" href="#"><span class="jstree-icon jstree-node-icon">&nbsp;</span> ${node.get('text')}</a>`;
-        
+
                             // TODO: do not redraw the whole DIV! update classes and texts
                             // TODO: add "dots" DIVs, prepare a style to render them "invisible" (opacity: 0)
                             dom.setAttribute('data-index', index);
@@ -558,7 +577,7 @@ class jsTree
                             this.handlers.render.forEach(v => v.call(this, dom, node));
                             node._dirty = false;
                         }).bind(this),
-                        count : () => this._nodeList.length
+                        count: () => this._nodeList.length
                     }
                 );
                 break;
@@ -566,13 +585,13 @@ class jsTree
                 this._renderer = new Flat(
                     target,
                     {
-                        create : (function () {
+                        create: (function () {
                             let node = document.createElement("div");
                             node.classList.add("jstree-node");
                             this.handlers.create.forEach(v => v.call(this, node));
                             return node;
                         }).bind(this),
-                        update : (function (index, dom, onlyDirty = true) {
+                        update: (function (index, dom, onlyDirty = true) {
                             let node = this._nodeList[index];
                             if (!node) {
                                 dom.style.display = 'none';
@@ -605,7 +624,7 @@ class jsTree
                             }
                             clss = this.getState(node, "selected", false) ? 'jstree-selected' : '';
                             html += `<a class="jstree-node-text ${clss}" href="#"><span class="jstree-icon jstree-node-icon">&nbsp;</span> ${node.get('text')}</a>`;
-        
+
                             // TODO: do not redraw the whole DIV! update classes and texts
                             // TODO: add "dots" DIVs, prepare a style to render them "invisible" (opacity: 0)
                             dom.setAttribute('data-index', index);
@@ -613,14 +632,14 @@ class jsTree
                             this.handlers.render.forEach(v => v.call(this, dom, node));
                             node._dirty = false;
                         }).bind(this),
-                        count : () => this._nodeList.length
+                        count: () => this._nodeList.length
                     }
                 );
                 break;
         }
     }
 
-    static instance (node) {
+    static instance(node) {
         if (node instanceof HTMLElement) {
             while (node.jsTree === undefined) {
                 if (!node.parentNode || node.parentNode === window.document) {
@@ -635,29 +654,29 @@ class jsTree
 }
 
 jsTree.defaults = {
-    data : (node, done) => done([]), // include fail option in docs
-    renderer : 'flat', // 'scroller'
-    plugins : {},
-    format   : {
-        flat       : false,
-        id         : "id",
-        children   : "children",
-        parent     : null,
-        position   : null,
-        data       : null,
-        title      : "text",
-        html       : false
+    data: (node, done) => done([]), // include fail option in docs
+    renderer: 'flat', // 'scroller'
+    plugins: {},
+    format: {
+        flat: false,
+        id: "id",
+        children: "children",
+        parent: null,
+        position: null,
+        data: null,
+        title: "text",
+        html: false
     },
-    strings : {
-        loading : "Loading ...",
-        newNode : "New node"
+    strings: {
+        loading: "Loading ...",
+        newNode: "New node"
     },
-    selection : {
-        multiple : true,
-        reveal   : true,
+    selection: {
+        multiple: true,
+        reveal: true,
     },
-    check : () => true,
-    error : err => err
+    check: () => true,
+    error: err => err
 };
 
 export default jsTree;
