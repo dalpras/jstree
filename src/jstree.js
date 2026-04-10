@@ -117,12 +117,17 @@ class jsTree {
     }
 
     getState(node, key, defaultValue = null) {
-        return !this.node(node).data.state ?
-            defaultValue :
-            (this.node(node).data.state[key] !== undefined ? this.node(node).data.state[key] : defaultValue);
+        node = this.node(node);
+        if (!node || !node.data.state) {
+            return defaultValue;
+        }
+        return node.data.state[key] !== undefined ? node.data.state[key] : defaultValue;
     }
     setState(node, key, value) {
         node = this.node(node);
+        if (!node) {
+            return this;
+        }
         if (!node.data.state) {
             node.data.state = {};
         }
@@ -209,19 +214,27 @@ class jsTree {
         }
         return this;
     }
-    open(node) {
+    open(node, options = {}) {
+        const silent = !!options.silent;
+
         if (Array.isArray(node)) {
-            node.forEach(x => this.open(x));
+            node.forEach(x => this.open(x, options));
             return this;
         }
+
         node = this.node(node);
         if (!this.getState(node, 'loaded', true)) {
-            this.load(node, () => this.open(node));
+            this.load(node, () => this.open(node, options));
             return this;
         }
+
         if (node) {
             this.setState(node, "opened", true);
-            this.trigger('open', { node: node });
+            if (silent) {
+                this.redraw(true);
+            } else {
+                this.trigger('open', { node });
+            }
         }
         return this;
     }
@@ -302,14 +315,24 @@ class jsTree {
         }
 
         node = this.node(node);
-        if (node) {
-            this.setState(node, "selected", true);
+        if (!node) {
+            return this;
+        }
 
-            if (silent) {
-                this.redraw();
-            } else {
-                this.trigger("select", { node: node });
+        if (!this.options.selection.multiple) {
+            for (let selected of this.getSelected()) {
+                if (selected !== node) {
+                    this.setState(selected, "selected", false);
+                }
             }
+        }
+
+        this.setState(node, "selected", true);
+
+        if (silent) {
+            this.redraw();
+        } else {
+            this.trigger("select", { node });
         }
 
         return this;
@@ -324,19 +347,20 @@ class jsTree {
         }
 
         node = this.node(node);
-        if (node) {
-            this.setState(node, "selected", false);
+        if (!node) {
+            return this;
+        }
 
-            if (silent) {
-                this.redraw();
-            } else {
-                this.trigger("deselect", { node: node });
-            }
+        this.setState(node, "selected", false);
+
+        if (silent) {
+            this.redraw();
+        } else {
+            this.trigger("deselect", { node });
         }
 
         return this;
     }
-
     selectAll(options = {}) {
         const silent = !!options.silent;
 
@@ -476,12 +500,15 @@ class jsTree {
     }
     delete(node) {
         if (Array.isArray(node)) {
-            node.forEach(x => this.enable(x));
+            node.forEach(x => this.delete(x));
             return this;
         }
         node = this.node(node);
+        if (!node) {
+            return this;
+        }
         node.remove();
-        this.trigger('delete', { node: node });
+        this.trigger('delete', { node });
         return this;
     }
 
@@ -521,23 +548,32 @@ class jsTree {
         target.jsTree = tree;
         target.classList.add('jstree');
         target.addEventListener('click', function (e) {
-            let target = e.target;
-            if (target && target.classList.contains("jstree-closed")) {
-                tree.open(target);
+            let el = e.target;
+
+            if (!el) return;
+
+            if (el.classList.contains("jstree-node-icon")) {
+                el = el.parentNode;
             }
-            if (target && target.classList.contains("jstree-opened")) {
-                tree.close(target);
+
+            if (el.classList.contains("jstree-closed")) {
+                tree.open(el);
+                return;
             }
-            if (target && target.classList.contains("jstree-node-icon")) {
-                target = target.parentNode;
+
+            if (el.classList.contains("jstree-opened")) {
+                tree.close(el);
+                return;
             }
-            if (target && target.classList.contains("jstree-node-text")) {
+
+            if (el.classList.contains("jstree-node-text")) {
                 e.preventDefault();
-                tree.deselectAll();
-                tree.select(target);
+                if (!tree.options.selection.multiple) {
+                    tree.deselectAll({ silent: true });
+                }
+                tree.select(el);
             }
         });
-
         this._nodeList = Array.from(this.visible());
         switch (this.options.renderer) {
             case 'scroller':
